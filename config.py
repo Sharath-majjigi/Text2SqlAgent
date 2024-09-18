@@ -1,5 +1,8 @@
+from dotenv import load_dotenv;
+import os;
 
-GEMINI_API_KEY = "AIzaSyCla26IKWer6KVkQgQ5_r2mOoDBHoesMzY"
-DB_PATH = "db/mock_db.sqlite"
+load_dotenv()
 
-# TODO: Store them in env
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+DB_PATH = os.getenv("MOCK_SQL_DB_PATH")

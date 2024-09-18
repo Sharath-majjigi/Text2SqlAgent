@@ -1,11 +1,11 @@
 from fastapi import FastAPI, HTTPException
 from agents.orchestrator import OrchestratorAgent
 from pydantic import BaseModel
-from config import GEMINI_API_KEY, DB_PATH
+from config import DB_PATH
 
 app = FastAPI()
 
-orchestrator_agent = OrchestratorAgent(GEMINI_API_KEY, DB_PATH)
+orchestrator_agent = OrchestratorAgent(DB_PATH)
 
 # request body / pydantic
 class QueryRequest(BaseModel):

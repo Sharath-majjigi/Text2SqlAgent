@@ -5,8 +5,6 @@ __pycache__/
 
 .env
 
-memory.json
-
 *.sqlite
 
 .DS_Store

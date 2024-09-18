@@ -1,11 +1,13 @@
+from dotenv import load_dotenv
+import os
 import requests
 import json
-import re
+
+load_dotenv()
 
 class GeminiAPIClient:
-    def __init__(self, api_key: str):
-        self.api_key = api_key
-        self.api_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key={self.api_key}"
+    def __init__(self):
+        self.api_url = os.getenv("GEMINI_API_URL")
 
     def generate_sql_query(self, task_description: str) -> str:
         """

@@ -13,11 +13,11 @@ class OrchestratorAgent:
     """
 
 
-    def __init__(self, gemini_api_key: str, db_path: str):
+    def __init__(self,db_path: str):
         """
         Initilize the orchestrator with Gemini Flash Api key, along with DDL Agent and DB Manager Agent
         """
-        self.gemini_api = GeminiAPIClient(gemini_api_key)
+        self.gemini_api = GeminiAPIClient()
         self.ddl_agent = DDLSchemaAgent(db_path)
         self.memory_agent = MemoryAgent()
         self.db_manager = DBManager(db_path)
