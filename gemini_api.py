@@ -77,7 +77,6 @@ class GeminiAPIClient:
             response.raise_for_status()
 
             result = response.json()
-            print(result)
 
             if "candidates" in result and len(result["candidates"]) > 0:
                 raw_sql = result["candidates"][0]["content"]["parts"][0]["text"]
