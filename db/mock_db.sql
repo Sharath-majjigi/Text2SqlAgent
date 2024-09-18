@@ -1,0 +1,17 @@
+DROP TABLE IF EXISTS users;
+
+CREATE TABLE users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL
+);
+
+DROP TABLE IF EXISTS orders;
+
+CREATE TABLE orders (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    product_name TEXT NOT NULL,
+    amount REAL NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
