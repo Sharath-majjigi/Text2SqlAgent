@@ -1,9 +1,10 @@
 import json
 import os
+from difflib import SequenceMatcher
 
 class MemoryAgent:
     """
-    MemoryAget whose sole responsibility is storing the interactions between system and user.
+    MemoryAgent whose sole responsibility is storing the interactions between system and user.
     """
 
     def __init__(self, memory_file: str = "memory.json"):
@@ -63,3 +64,32 @@ class MemoryAgent:
         :return: A list of past interactions.
         """
         return self.memory.get("history", [])
+    
+
+    
+    def suggest_similar_query(self, new_query: str) -> dict:
+        """
+        Suggests a similar query from memory based on the new query.
+        """
+        if "history" not in self.memory:
+            return None
+
+        best_match = None
+        highest_similarity = 0
+
+        for interaction in self.memory["history"]:
+            similarity = self._calculate_similarity(interaction["user_query"], new_query)
+            if similarity > highest_similarity:
+                best_match = interaction
+                highest_similarity = similarity
+
+        if best_match and highest_similarity > 0.7:  # Threshold for a good match
+            return best_match
+        return None
+
+
+    def _calculate_similarity(self, query1: str, query2: str) -> float:
+        """
+        Calculates the similarity between two queries using SequenceMatcher.
+        """
+        return SequenceMatcher(None, query1, query2).ratio()

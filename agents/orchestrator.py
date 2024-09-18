@@ -50,6 +50,11 @@ class OrchestratorAgent:
         """
 
         sqlite_schema = self.ddl_agent.get_sqlite_schema()
+
+        suggested_query = self.memory_agent.suggest_similar_query(user_query)
+        if suggested_query:
+            return suggested_query['result']
+        
         sql_query = self.gemini_api.generate_sql_query(user_query)
 
         print(f"Generated SQL Query: {sql_query}")
