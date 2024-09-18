@@ -119,10 +119,10 @@ Response:
 
 | Challenge                          | Description                                                                                                                                                                                                                             |
 |------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Learning Python**                | Not coded in Python much, so I had to learn the best practices along the way. While it was initially a challenge to adapt, I quickly found it to be fun to work with.                                                                     |
 | **Using LLM for SQL Generation**   | Using LLM to generate SQL queries from natural language was one of the more challenging aspects. It required carefully crafting prompts that provided enough context about the database schema. Multiple iterations were needed to perfect it. |
 | **Designing Autonomous Agents**    | Designing the system’s agents required understanding what makes an agent autonomous and how to make it react to different situations, such as changes in the database schema. Agents needed to handle tasks independently.                   |
 | **Handling Schema Changes**        | Handling both SQLite databases and CSV files required the system to adapt to any changes in their structure. Making agents automatically detect schema changes and update their understanding was tricky.                                  |
 | **Building a Memory System**       | It was challenging to build a memory system that not only stored past queries but also learned from them. The system had to become smarter over time by suggesting SQL queries based on similar past queries.                             |
+| **Learning Python**                | Not coded in Python much, so I had to learn the best practices along the way. While it was initially a challenge to adapt, I quickly found it to be fun to work with.                                                                     |
 
 
