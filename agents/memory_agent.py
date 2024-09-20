@@ -83,7 +83,7 @@ class MemoryAgent:
                 best_match = interaction
                 highest_similarity = similarity
 
-        if best_match and highest_similarity > 1:  # Threshold for a good match
+        if best_match and highest_similarity > 0.99:  # Threshold for a good match
             return best_match
         return None
 
