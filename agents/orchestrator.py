@@ -1,5 +1,6 @@
 import pandas as pd
 import pandasql as ps
+import json
 from gemini_api import GeminiAPIClient
 from agents.ddl_agent import DDLSchemaAgent
 from agents.memory_agent import MemoryAgent
@@ -36,7 +37,8 @@ class OrchestratorAgent:
         if result_df is None or result_df.empty:
             raise Exception("Oops No data found, retrying again...")
         
-        self.memory_agent.add_interaction(user_query, sql_query, result_df.to_dict())
+        result_df = result_df.to_dict(orient="records")
+        self.memory_agent.add_interaction(user_query, sql_query, result_df)
         return result_df
 
    
@@ -53,7 +55,8 @@ class OrchestratorAgent:
 
         suggested_query = self.memory_agent.suggest_similar_query(user_query)
         if suggested_query:
-            return suggested_query['result']
+            return suggested_query.get("result")
+            
         
         sql_query = self.gemini_api.generate_sql_query(user_query)
 
@@ -66,7 +69,7 @@ class OrchestratorAgent:
                 return result_df.to_dict(orient="records")
             
             except Exception as e:
-                return {"error": f"Failed to execute SQL query after retries: {str(e)}"}
+                return {"error occured at handle_user_query": f" {str(e)}"}
         
         else:
             return self.execute_csv(sql_query,user_query)
@@ -90,9 +93,11 @@ class OrchestratorAgent:
 
             if result_df is None or result_df.empty:
                 return {"message": "Oops no records found."}
+            
+            result_df = result_df.to_dict(orient="records")
+            self.memory_agent.add_interaction(user_query, sql_query, result_df)
 
-            self.memory_agent.add_interaction(user_query, sql_query, result_df.to_dict())
-            return result_df.to_dict(orient="records")
+            return result_df
     
         except Exception as e:
             return {"error": f"Failed to query on CSV data: {str(e)}"}
