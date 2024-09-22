@@ -10,6 +10,9 @@ orchestrator_agent = OrchestratorAgent(DB_PATH)
 class QueryRequest(BaseModel):
     natural_language_query: str
 
+class TrainingData(BaseModel):
+    user_query: str
+    sql_query: str
 
 @app.post("/query")
 async def execute_user_query(query: QueryRequest):
@@ -29,3 +32,12 @@ async def get_interaction_history():
     API to retrieve the history of past interactions stored in VectorDatabase (through SQLite).
     """
     return orchestrator_agent.memory_agent.get_interaction_history()
+
+@app.post("/train")
+async def train_system(training_data: TrainingData):
+    """
+    API to retrieve the history of past interactions stored in VectorDatabase (through SQLite).
+    """
+    return orchestrator_agent.memory_agent.add_interaction(training_data.user_query, training_data.sql_query)
+
+# TODO: Add bulk training api (Like a user can upload a pdf with training data)
