@@ -1,113 +1,120 @@
 import json
-import os
-from difflib import SequenceMatcher
-import sqlite3
+from sentence_transformers import SentenceTransformer, util
+from sqlalchemy import create_engine, Column, Integer, String
+from sqlalchemy.orm import declarative_base, sessionmaker
+
+# The base for ORM models
+Base = declarative_base()
+
+# The Interaction model to represent the interactions table
+class Interaction(Base):
+    __tablename__ = 'interactions'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_query = Column(String, nullable=False)
+    sql_query = Column(String, nullable=False)
+
 
 class MemoryAgent:
     """
-    MemoryAgent whose sole responsibility is storing the interactions between system and user.
+    MemoryAgent which is responsible for storing the interactions between system and user,
+    and suggesting similar queries.
     """
 
-    def __init__(self, memory_file: str = "data/memory.db"):
-        self.memory_file = memory_file
-        self.memory = self._create_interactions_table()
+    def __init__(self, db_url: str = "sqlite:///db/memory.db"):
+        self.engine = create_engine(db_url)
+        self.Session = sessionmaker(bind=self.engine)
+        self.model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
 
-
-    def _create_interactions_table(self):
+    def add_interaction(self, user_query: str, sql_query: str):
         """
-        Creates a table to store interactions in SQLite if it doesn't exist.
-        """
-        with sqlite3.connect(self.memory_file) as conn:
-            conn.execute('''
-                CREATE TABLE IF NOT EXISTS interactions (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    user_query TEXT,
-                    sql_query TEXT,
-                    result TEXT
-                )
-            ''')
-
-
-
-    def _save_memory(self):
-        """
-        Saves the current memory state.
-        """
-        with open(self.memory_file, 'w') as file:
-            json.dump(self.memory, file, indent=4)
-
-
-
-    def add_interaction(self, user_query: str, sql_query: str, result: str):
-        """
-        Adds a new interaction to the SQLite database, storing the result as a JSON string.
+        Adds a new interaction to the database after checking if a similar interaction exists.
 
         :param user_query: The natural language query from the user.
         :param sql_query: The SQL query generated from the natural language query.
-        :param result: The result after running the SQL query, as a JSON string.
         """
-        result_in_json = json.dumps(result)
-        with sqlite3.connect(self.memory_file) as conn:
-            conn.execute('''
-                INSERT INTO interactions (user_query, sql_query, result) 
-                VALUES (?, ?, ?)
-            ''', (user_query, sql_query, result_in_json))
-   
-   
+        session = self.Session()
+
+        # Check if a similar interaction exists first
+        similar_interaction = self.suggest_similar_query(user_query)
+
+        # If no similar interaction is found or SQL queries don't match, add new interaction
+        if not similar_interaction or similar_interaction['sql_query'] != sql_query:
+            new_interaction = Interaction(user_query=user_query, sql_query=sql_query)
+            session.add(new_interaction)
+            session.commit()
+
+        session.close()
+
     def get_interaction_history(self) -> list:
         """
-        Retrieves the history of all interactions stored in the SQLite database.
+        Retrieves the history of all interactions stored in the database.
 
-        :return: A list of dictionaries, where each dictionary contains the user query, SQL query, and result as a JSON string.
+        :return: A list of dictionaries, where each dictionary contains the user query and SQL query.
         """
-        with sqlite3.connect(self.memory_file) as conn:
-            cursor = conn.execute('SELECT user_query, sql_query, result FROM interactions')
-            history = []
-            for row in cursor.fetchall():
-                history.append({
-                    "user_query": row[0],
-                    "sql_query": row[1],
-                    "result": row[2]  # Return the result as a JSON string, not as a dictionary
-                })
+        session = self.Session()
+        interactions = session.query(Interaction).all()
+
+        history = [{
+            "user_query": interaction.user_query,
+            "sql_query": interaction.sql_query
+        } for interaction in interactions]
+
+        session.close()
         return history
-    
 
-    
-    def suggest_similar_query(self, new_query: str) -> json:
+    def suggest_similar_query(self, new_query: str) -> dict:
         """
-        Suggests a similar query from memory based on the new query using string similarity.
+        Suggests a similar query from memory based on the new query using BERT embeddings for semantic similarity.
 
         :param new_query: The new natural language query provided by the user.
-        :return: The closest matching interaction (including result as JSON string) if found, otherwise None.
+        :return: The closest matching interaction if found, otherwise None.
         """
         best_match = None
         highest_similarity = 0
 
-        # Fetch all stored interactions
-        with sqlite3.connect(self.memory_file) as conn:
-            cursor = conn.execute('SELECT user_query, sql_query, result FROM interactions')
-            for row in cursor.fetchall():
-                user_query = row[0]
-                similarity = self._calculate_similarity(user_query, new_query)
-                if similarity > highest_similarity:
-                    best_match = {
-                        "user_query": row[0],
-                        "sql_query": row[1],
-                        "result": json.loads(row[2])  # Keep the result as a JSON string
-                    }
-                    highest_similarity = similarity
+        session = self.Session()
+        past_interactions = session.query(Interaction).all()
 
-        # If the best match has a high similarity score, return it
-        if best_match and highest_similarity > 0.99:  # Use a threshold for matching
+        if not past_interactions:
+            session.close()
+            return None
+
+        # Generate BERT embedding for the new query
+        new_query_embedding = self.model.encode(new_query, convert_to_tensor=True)
+
+        # Compare the new query with each past query one by one
+        for interaction in past_interactions:
+            past_query = interaction.user_query
+            sql_query = interaction.sql_query
+
+            # Calculate similarity
+            similarity = self._calculate_similarity(new_query_embedding, past_query)
+
+            if similarity > highest_similarity:
+                best_match = {
+                    "user_query": past_query,
+                    "sql_query": sql_query
+                }
+                highest_similarity = similarity
+
+        session.close()
+
+        if best_match and highest_similarity > 0.70:
             return best_match
         return None
 
-    def _calculate_similarity(self, query1: str, query2: str) -> float:
+    def _calculate_similarity(self, new_query_embedding, past_query: str) -> float:
         """
-        Calculates the similarity between two queries using SequenceMatcher.
+        Calculates the semantic similarity between the new query embedding and the past query
+        using BERT embeddings and cosine similarity.
 
-        :param query1: The first query string.
-        :param query2: The second query string.
-        :return: A float representing the similarity between the two queries.
+        :param new_query_embedding: The pre-computed BERT embedding for the new query.
+        :param past_query: The past query string to compare with.
+        :return: A float representing the similarity between the new query and the past query.
         """
-        return SequenceMatcher(None, query1, query2).ratio()
+        past_query_embedding = self.model.encode(past_query, convert_to_tensor=True)
+
+        similarity = util.pytorch_cos_sim(new_query_embedding, past_query_embedding)
+
+        return similarity.item()

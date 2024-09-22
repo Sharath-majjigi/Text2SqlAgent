@@ -26,20 +26,7 @@ class OrchestratorAgent:
             "sales": "data/sales.csv",      
             "inventory": "data/inventory.csv" 
         }
-        
-
-    def execute_sql(self, sql_query: str, user_query: str):
-        """
-        Executes an SQL query
-        """
-
-        result_df = self.db_manager.execute_sql(sql_query)
-        if result_df is None or result_df.empty:
-            raise Exception("Oops No data found, retrying again...")
-        
-        result_df = result_df.to_dict(orient="records")
-        self.memory_agent.add_interaction(user_query, sql_query, result_df)
-        return result_df
+    
 
    
     def handle_user_query(self, user_query: str) -> dict:
@@ -51,23 +38,33 @@ class OrchestratorAgent:
         :return: The result of the query execution as a dictionary.
         """
 
-        sqlite_schema = self.ddl_agent.get_sqlite_schema()
-
         suggested_query = self.memory_agent.suggest_similar_query(user_query)
         if suggested_query:
-            return suggested_query.get("result")
-            
+            sql_query =  suggested_query.get("sql_query")
+            result = self.identify_datasource_and_execute_query(user_query,sql_query)
+            print("Similar query found, user_query: "+ user_query + "\n" + "sql_query: " + sql_query)
+
+            return result
+        
         
         sql_query = self.gemini_api.generate_sql_query(user_query)
 
         print(f"Generated SQL Query: {sql_query}")
 
+        return self.identify_datasource_and_execute_query(user_query,sql_query)
+
+
+
+    def identify_datasource_and_execute_query(self,user_query,sql_query:str):
+
+        sqlite_schema = self.ddl_agent.get_sqlite_schema()
+
         if any(table in user_query for table in sqlite_schema.keys()):
-            
+        
             try:
                 result_df = self.execute_sql(sql_query,user_query)
-                return result_df.to_dict(orient="records")
-            
+                return result_df
+
             except Exception as e:
                 return {"error occured at handle_user_query": f" {str(e)}"}
         
@@ -75,7 +72,22 @@ class OrchestratorAgent:
             return self.execute_csv(sql_query,user_query)
 
 
+    
+    def execute_sql(self, sql_query: str, user_query: str):
+        """
+        Executes an SQL query
+        """
 
+        result_df = self.db_manager.execute_sql(sql_query)
+        if result_df is None or result_df.empty:
+            raise Exception("Oops No data found, retrying again...")
+        
+        result_df = result_df.to_dict(orient="records")
+        self.memory_agent.add_interaction(user_query, sql_query)
+        return result_df
+   
+   
+    
     def execute_csv(self, sql_query: str,user_query: str):
         """
         Handle queries for CSV data sources.
@@ -95,7 +107,7 @@ class OrchestratorAgent:
                 return {"message": "Oops no records found."}
             
             result_df = result_df.to_dict(orient="records")
-            self.memory_agent.add_interaction(user_query, sql_query, result_df)
+            self.memory_agent.add_interaction(user_query, sql_query)
 
             return result_df
     

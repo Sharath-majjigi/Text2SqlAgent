@@ -6,6 +6,8 @@ __pycache__/
 .env
 
 *.sqlite
+memory.db
+mock_db.sqlite
 
 .DS_Store
 .idea/
