@@ -9,8 +9,9 @@ from db_manager import DBManager
 class OrchestratorAgent:
    
     """
-    OrchestratorAgent as the name suggests it orchestrates the agents to handle queries and interactions.
-    Basically it is responsible for managing the flow of queries.
+    OrchestratorAgent is responsible for the complete flow of request, it communicates with memory
+    agent for retrieving semantically similar query and it also decides which datasource the query
+    should be executed on.
     """
 
 
@@ -45,7 +46,6 @@ class OrchestratorAgent:
             print("Similar query found, user_query: "+ user_query + "\n" + "sql_query: " + sql_query)
 
             return result
-        
         
         sql_query = self.gemini_api.generate_sql_query(user_query)
 
@@ -100,6 +100,7 @@ class OrchestratorAgent:
         sales_df = pd.read_csv(self.csv_files["sales"])
 
         try:
+            
             sql_query = sql_query.replace("inventory", "inventory_df").replace("sales", "sales_df")
             result_df = ps.sqldf(sql_query, {"inventory_df": inventory_df, "sales_df": sales_df})
 
