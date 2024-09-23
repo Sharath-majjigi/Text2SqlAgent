@@ -208,7 +208,7 @@ Response:
 ### 8️⃣ Notes
 
 - Make sure to add your Gemini API credentials to the .env file before running the application. </br>
-- Make sure you have your **weaviate** 
+- If you want to try out RAG + vector DB make sure you checkout to that branch and have your **weaviate**  up and running,
   If not run this
   ```bash
   docker run -d -p 8080:8080 semitechnologies/weaviate:latest 
