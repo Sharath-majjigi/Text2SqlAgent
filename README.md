@@ -2,6 +2,21 @@
 
 This project implements a Text-to-SQL query system that converts natural language queries into SQL queries to fetch data from multiple sources, including a MySQL database and CSV files. It uses AI agents to determine the correct data source and returns the appropriate results via a REST API.
 
+# Demo + Explaination videos
+
+## Demo Video
+
+[![Demo Video](https://img.icons8.com/color/48/000000/video.png)](https://drive.google.com/file/d/1gTczpXvn02lvloueNqczsNVRid5TGLpV/view?usp=sharing)
+
+[Watch the demo video](https://drive.google.com/file/d/1gTczpXvn02lvloueNqczsNVRid5TGLpV/view?usp=sharing)
+
+## Explanation Video
+
+[![Explanation Video](https://img.icons8.com/color/48/000000/video.png)](https://drive.google.com/file/d/1Tc8mXSWehhN3k7iXkzkOnvCYLLPrLekU/view?usp=drive_link)
+
+[Watch the explanation video](https://drive.google.com/file/d/1Tc8mXSWehhN3k7iXkzkOnvCYLLPrLekU/view?usp=drive_link)
+
+
 ## 🌟 My approaches for Text2Sql
 
 - **Tex2Sql - v1**
