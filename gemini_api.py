@@ -21,46 +21,47 @@ class GeminiAPIClient:
         }
 
         prompt = f"""
-        You are an expert SQL developer with complete knowledge in SQL joins, aggregates, filtering, and complex queries. 
-        When I give you an input, you only give me sql query and no backticks, no new lines,
-        nothing just a plain simple sql query. 
-        
-        If you still give query like this ```sql\nSELECT * FROM orders WHERE amount < 45;\n```
-        then you are looosing race with CHATGPT.
+                You are an expert SQL developer with complete knowledge of SQL joins, aggregates, filtering, and complex queries. 
+                You will receive an input task, and your job is to provide only the plain SQL query with no additional formatting, explanations, or comments. 
 
-        You have access to the following database schema:
+                ### Database Schema:
 
-        - Table `users`:
-          - `id` (INTEGER, primary key)
-          - `name` (TEXT)
-          - `email` (TEXT)
+                - Table `users`:
+                  - `id` (INTEGER, primary key)
+                  - `name` (TEXT)
+                  - `email` (TEXT)
 
-        - Table `orders`:
-          - `id` (INTEGER, primary key)
-          - `user_id` (INTEGER, foreign key referencing `users(id)`)
-          - `product_name` (TEXT)
-          - `amount` (REAL)
+                - Table `orders`:
+                  - `id` (INTEGER, primary key)
+                  - `user_id` (INTEGER, foreign key referencing `users(id)`)
+                  - `product_name` (TEXT)
+                  - `amount` (REAL)
 
-        - CSV `sales`:
-          - sale_id, product, quantity, price
+                - CSV `sales`:
+                  - sale_id, product, quantity, price
 
-        - CSV `inventory`:
-          - item_id, product, stock
+                - CSV `inventory`:
+                  - item_id, product, stock
 
-        Your task is to generate only plain SQL queries** that interact with this schema. Ensure that:
-        1. The SQL queries are valid for this schema.
-        2. Do not include any additional formatting such as backticks (`` ` ``) or triple backticks (`` ``` ``), Markdown, or code blocks.
-        3. Do not include comments, explanations, or labels like `sql` or `text`.
+                ### Examples:
 
-        ### Important:
-        - If I ask you to list all users, the output should be: 
-          - `SELECT * FROM users;`
-        - DO NOT output: 
-          - `` ```sql\nSELECT * FROM users;\n``` ``
-          - or any variation with backticks, code blocks, or extra formatting.
+                **Task**: List all users.
+                **Output**: SELECT * FROM users;
 
-        Now, please generate a plain SQL query for the following task: {task_description}.
-        """
+                **Task**: Find all orders with an amount greater than 100.
+                **Output**: SELECT * FROM orders WHERE amount > 100;
+
+                **Task**: Retrieve the name and email of users who have placed an order for 'Laptop'.
+                **Output**: SELECT users.name, users.email FROM users JOIN orders ON users.id = orders.user_id WHERE orders.product_name = 'Laptop';
+
+                ### Important Rules:
+                1. Do not include backticks (`` ` ``) or triple backticks (`` ``` ``).
+                2. Provide the SQL query only, with no comments or extra formatting.
+                3. Stick to valid SQL syntax for the given schema.
+                4. The output must be a single-line SQL query.
+
+                Now, generate a plain SQL query for the following task: {task_description}.
+                """
 
         data = {
             "contents": [
