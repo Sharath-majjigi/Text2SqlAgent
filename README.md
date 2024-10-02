@@ -6,9 +6,9 @@ This project implements a Text-to-SQL query system that converts natural languag
 
 ## Demo Video
 
-[![Demo Video](https://img.icons8.com/color/48/000000/video.png)](https://drive.google.com/file/d/1gTczpXvn02lvloueNqczsNVRid5TGLpV/view?usp=sharing)
+[![Demo Video](https://img.icons8.com/color/48/000000/video.png)](https://www.canva.com/design/DAGRjclYbOI/oUzDDNxnQgA7nootgboc3Q/watch?utm_content=DAGRjclYbOI&utm_campaign=designshare&utm_medium=link&utm_source=editor)
 
-[Watch the demo video](https://drive.google.com/file/d/1gTczpXvn02lvloueNqczsNVRid5TGLpV/view?usp=sharing)
+[Watch the demo video](https://www.canva.com/design/DAGRjclYbOI/oUzDDNxnQgA7nootgboc3Q/watch?utm_content=DAGRjclYbOI&utm_campaign=designshare&utm_medium=link&utm_source=editor)
 
 ## Explanation Video
 
