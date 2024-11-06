@@ -12,3 +12,4 @@ mock_db.sqlite
 .DS_Store
 .idea/
 .vscode/
+readme.md
